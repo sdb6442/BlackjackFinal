@@ -354,7 +354,7 @@ func shopping(x Player) {
 	}
 
 	fmt.Println("\nEnter prize number for selection: ")
-	fmt.Scan(&itemChoice)
+	fmt.Scanln(&itemChoice)
 
 	for num := range shop {
 		if itemChoice == shop[num].itemNum && numChips > shop[num].cost {
@@ -367,7 +367,7 @@ func shopping(x Player) {
 	}
 
 	fmt.Println("\nWould you like to purchase another prize? (y/n)")
-	fmt.Scan(&choice)
+	fmt.Scanln(&choice)
 	if choice == "y" {
 		shopping(x)
 	} else if choice == "n" {
@@ -433,7 +433,7 @@ func viewwallet(x Player) {
 	fmt.Println("Cash: $", wallet)
 	fmt.Println("\nReturn to menu? (y/n)")
 	var choice string
-	fmt.Scan(&choice)
+	fmt.Scanln(&choice)
 	if choice == "y" {
 		println("Returning to Menu.")
 		directory(x)
