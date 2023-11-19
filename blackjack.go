@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"reflect"
 	"time"
 )
 
@@ -18,6 +19,117 @@ func New(text string) error {
 	return &errorString{text}
 }
 
+/*
+ ************** Start (Brian) Program Structs **************
+
+ */
+
+type Player struct {
+	Name     string
+	Hand     []CardMaker
+	Score    int
+	IsBusted bool
+}
+
+type CardMaker struct {
+	FaceValue  string
+	NumValue   int
+	Suit       string
+	IsFaceCard bool
+	Color      rune
+}
+
+type prizeMaker struct {
+	item    string
+	cost    int
+	itemNum int
+}
+
+type Shop []prizeMaker
+type Deck []CardMaker
+
+var wallet float64 = 127.00
+var chipValue float64 = 10.00
+var numChips int
+
+func logout() {
+	//prototype for converting player chips to cash
+	fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
+	for i := 0; numChips != 0; i++ {
+		wallet = wallet + chipValue
+		numChips--
+	}
+
+	//fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
+	fmt.Println("You have", "$", wallet, "in your wallet")
+
+	fmt.Println("\nThank you for playing, please come again")
+	fmt.Println()
+	return
+}
+
+/*
+
+
+
+************** (Brian) Creating Card Deck Functions **************
+
+
+
+ */
+
+func newDeck() (deck Deck) {
+	//assigned values for the cards, ace = 1, jack = 11 queen=12 king= 13
+	numValues := [13]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+
+	//face value of cards
+	faceValues := [13]string{"Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"}
+
+	//suits include Heart, Diamond, Club, Spade
+	suits := [4]string{" Heart", "Diamond", "Club", " Spade"}
+
+	var cardColor rune
+	var faceCard bool
+
+	for i := 0; i < len(faceValues); i++ {
+		for j := 0; j < len(suits); j++ {
+			if faceValues[i] == "Jack" || faceValues[i] == "Queen" || faceValues[i] == "King" || faceValues[i] == "Ace" {
+				faceCard = true
+			} else {
+				faceCard = false
+			}
+			//Switches card color based on suite. 82 = 'R'(Red)   66= 'B' (Black)
+			if suits[j] == "Heart" || suits[j] == "Diamond" {
+				cardColor = 'R'
+			} else {
+				cardColor = 'B'
+			}
+			//Brian-Converted rune cardColor to string for output
+			card := CardMaker{
+				FaceValue:  faceValues[i],
+				NumValue:   numValues[i],
+				Suit:       suits[j],
+				IsFaceCard: faceCard,
+				Color:      rune(cardColor),
+			}
+			deck = append(deck, card)
+		}
+	}
+	return deck
+}
+
+/*
+
+
+
+
+
+************** (Sam) Blackjack Game Functions **************
+
+
+
+
+ */
 // Shuffles deck of cards (Sam)
 func shuffle(deck *Deck) {
 	rand.Shuffle(len(*deck), func(i, j int) {
@@ -60,7 +172,7 @@ func calcScore(player *Player) {
 func printHand(hand []CardMaker) string {
 	var result string
 	for _, cardMaker := range hand {
-		result += fmt.Sprintf("\n   %s of %ss", cardMaker.FaceValue, cardMaker.Suit)
+		result += fmt.Sprintf("\n   *%s of %ss", cardMaker.FaceValue, cardMaker.Suit)
 	}
 	return result
 }
@@ -68,7 +180,7 @@ func printHand(hand []CardMaker) string {
 // Blackjack - Game play (Sam)
 func blackJack(dealer, player *Player, deck *Deck) {
 
-	fmt.Println("\n******************** START OF GAME ********************")
+	fmt.Println("\n******************** START BLACKJACK GAME ********************")
 
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
@@ -99,8 +211,9 @@ func blackJack(dealer, player *Player, deck *Deck) {
 		if decision == "h" {
 			drawCard(player, deck)
 			calcScore(player)
+			fmt.Printf("****** New Hand ******\n")
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
-			fmt.Printf("\nYour updated Total: %d\n", player.Score)
+			fmt.Printf("\nCurrent Total: %d\n", player.Score)
 
 			if player.Score > 21 {
 				player.IsBusted = true
@@ -155,50 +268,45 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	}
 
 	fmt.Println("\n******************** END OF GAME ********************")
-
-}
-
-//Code from Brian/
-
-func newDeck() (deck Deck) {
-	//assigned values for the cards, ace = 1, jack = 11 queen=12 king= 13
-	numValues := [13]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
-
-	//face value of cards
-	faceValues := [13]string{"Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"}
-
-	//suits include Heart, Diamond, Club, Spade
-	suits := [4]string{"Heart", "Diamond", "Club", "Spade"}
-
-	var cardColor rune
-	var faceCard bool
-
-	for i := 0; i < len(faceValues); i++ {
-		for j := 0; j < len(suits); j++ {
-			if faceValues[i] == "Jack" || faceValues[i] == "Queen" || faceValues[i] == "King" || faceValues[i] == "Ace" {
-				faceCard = true
-			} else {
-				faceCard = false
-			}
-			//Switches card color based on suite. 82 = 'R'(Red)   66= 'B' (Black)
-			if suits[j] == "Heart" || suits[j] == "Diamond" {
-				cardColor = 'R'
-			} else {
-				cardColor = 'B'
-			}
-			//Brian-Converted rune cardColor to string for output
-			card := CardMaker{
-				FaceValue:  faceValues[i],
-				NumValue:   numValues[i],
-				Suit:       suits[j],
-				IsFaceCard: faceCard,
-				Color:      rune(cardColor),
-			}
-			deck = append(deck, card)
-		}
+	fmt.Println("Return to menu? (Y/N)")
+	var back string
+	fmt.Scanln(&back)
+	if back == "y" {
+		directory(*player)
+	} else if back == "n" {
+		return
 	}
-	return deck
+
 }
+
+// Blackjack Game functions (sam)
+func playblackjack(x Player) {
+	// Makes the order of cards random each time program starts
+	rand.Seed(time.Now().UnixNano())
+
+	// Create deck
+	deck := newDeck()
+
+	//Shuffle deck
+	shuffle(&deck)
+
+	// Create Dealer Player
+	dealer := Player{Name: "Dealer"}
+
+	// Begin Blackjack
+	blackJack(&dealer, &x, &deck)
+}
+
+/*
+
+
+
+
+
+
+************** (Brian) Prize Shop Functions **************
+
+ */
 
 func prizeList() (shop Shop) {
 	prizes := [10]string{"Starbucks GiftCard", "Gas card", "Scratch-off lottery tickets", "Bottles of liquor", "Movie Tickets", "Spay day tickets", "Football Tickets",
@@ -218,64 +326,33 @@ func prizeList() (shop Shop) {
 	return shop
 }
 
-type Player struct {
-	Name     string
-	Hand     []CardMaker
-	Score    int
-	IsBusted bool
-}
+// prototype for buying prize (brian)
+func buyprize(x Player, s int) {
 
-type CardMaker struct {
-	FaceValue  string
-	NumValue   int
-	Suit       string
-	IsFaceCard bool
-	Color      rune
-}
-
-type prizeMaker struct {
-	item    string
-	cost    int
-	itemNum int
-}
-
-var wallet float64 = 127.00
-var chipValue float64 = 10.00
-var numChips int
-
-func login() {
-	fmt.Println("\nWelcome to the Blackjack table")
-	fmt.Println()
-
-}
-
-func logout() {
-	//prototype for converting player chips to cash
-	fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
-	for i := 0; numChips != 0; i++ {
-		wallet = wallet + chipValue
-		numChips--
+	var choice string
+	//var itemChoice int
+	fmt.Println("Would you like to purchase a prize? (y/n)")
+	fmt.Scan(&choice)
+	if choice == "y" {
+		fmt.Println("Enter prize number for selection: ")
+		fmt.Scan(&s)
 	}
-
-	//fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
-	fmt.Println("You have", "$", wallet, "in your wallet")
-
-	fmt.Println("\nThank you for playing, please come again")
-	fmt.Println()
-	return
+	if choice == "n" {
+		println("Returning to Menu.")
+		directory(x)
+	}
 }
 
-// Function for shopping for prizes
-func shopping() {
+// Function for shopping for prizes (brian)
+func shopping(x Player) {
 	var choice string
 	var itemChoice int
 	shop := prizeList()
 	fmt.Println("\nThis is our list of prizes: ")
 	for i := 1; i < len(shop); i++ {
-		fmt.Println("\nPrize #", i, ":", shop[i].item, " which cost ", shop[i].cost, "chips")
+		fmt.Println("[", i, "]:", shop[i].cost, "chips > ", shop[i].item)
 	}
 
-	fmt.Println("\nWhich prize would you like to purchase: ")
 	fmt.Println("\nEnter prize number for selection: ")
 	fmt.Scan(&itemChoice)
 
@@ -288,44 +365,60 @@ func shopping() {
 			break
 		}
 	}
-	fmt.Println("\nWould you like to purchase another prize?")
-	fmt.Println("\nEnter y for Yes and n for No: ")
+
+	fmt.Println("\nWould you like to purchase another prize? (y/n)")
 	fmt.Scan(&choice)
 	if choice == "y" {
-		shopping()
+		shopping(x)
 	} else if choice == "n" {
-		return
+
+		directory(x)
 	}
 }
 
-type Shop []prizeMaker
-type Deck []CardMaker
+/*
 
-func main() {
 
-	login()
 
-	// Makes the order of cards random each time program starts
-	rand.Seed(time.Now().UnixNano())
 
-	// Create deck
-	deck := newDeck()
 
-	//Shuffle deck
-	shuffle(&deck)
+************** (Jasmine) User Main Menu Functions **************
 
-	var player Player
-	fmt.Println("What's your name?")
-	fmt.Scanln(&player.Name)
+ */
 
-	fmt.Printf("Welcome, %s!\n", player.Name)
-	fmt.Println()
+func directory(x Player) {
 
-	// Create Dealer Player
-	dealer := Player{Name: "Dealer"}
+	fmt.Println("******************* BLACKJACK MENU *******************")
 
-	// Begin Blackjack
-	blackJack(&dealer, &player, &deck)
+	fmt.Printf("Welcome to blackjack , %s!\n", x.Name)
+	fmt.Println("Select a number to begin an activity. \n\n[1]: Play Blackjack\n[2]: Go Shopping\n[3]: View Wallet\n[4]: Logout")
+
+	var menunum int
+	fmt.Scanln(&menunum)
+
+	if menunum >= 1 || menunum <= 4 {
+		switch {
+		case menunum == 1:
+			println("You Selected Blackjack.")
+			playblackjack(x)
+		case menunum == 2:
+			println("You Selected Shopping.")
+			shopping(x)
+		case menunum == 3:
+			println("You Selected Wallet.")
+			viewwallet(x)
+		case menunum == 4:
+			println("Logging You Out...")
+		}
+	}
+	if reflect.TypeOf(menunum).Kind() != reflect.Int {
+		println("Input not accepted. Please try again.")
+		fmt.Scanln(&menunum)
+	}
+
+}
+
+func viewwallet(x Player) {
 
 	//prototype for converting player cash to chips
 	//var wallet float64 = 127.00
@@ -336,18 +429,32 @@ func main() {
 		numChips++
 	}
 
-	fmt.Println("\nYou have", numChips, "chips worth", "$", chipValue, "each")
-	fmt.Println("You have", "$", wallet, "in your wallet")
-
-	//Prototype for buying prizes
+	fmt.Println("\nChips Count: ", numChips, "valued at $", chipValue, "each")
+	fmt.Println("Cash: $", wallet)
+	fmt.Println("\nReturn to menu? (y/n)")
 	var choice string
-	//var itemChoice int
-	fmt.Println("\nWould you like to purchase a prize?")
-	fmt.Println("\nEnter y for Yes and n for No: ")
 	fmt.Scan(&choice)
 	if choice == "y" {
-		shopping()
+		println("Returning to Menu.")
+		directory(x)
+	}
+	if choice == "n" {
+		viewwallet(x)
 	}
 
-	logout()
+}
+
+/*
+************** Main Method **************
+ */
+func main() {
+
+	var player Player
+
+	fmt.Println("What's your name?")
+	fmt.Scanln(&player.Name)
+
+	directory(player)
+
+	//logout()
 }
