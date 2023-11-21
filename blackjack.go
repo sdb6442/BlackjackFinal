@@ -179,9 +179,12 @@ func printHand(hand []CardMaker) string {
 
 // Blackjack - Game play (Sam)
 func blackJack(dealer, player *Player, deck *Deck) {
-
+	var wager int
+	var win int = 0
+	var DorN = false
 	fmt.Println("\n******************** START BLACKJACK GAME ********************")
 
+	wager = bet(*player)
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
 	drawCard(dealer, deck)
@@ -204,10 +207,13 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 	// Let player decide to hit or stand, scores and hands update and print
 	var decision string
-	for !player.IsBusted {
-		fmt.Printf("Would you like to hit or stand? - Enter h for Hit, s for Stand\n")
+	for !player.IsBusted && DorN == false {
+		fmt.Printf("Would you like to hit or stand? - Enter h for Hit, s for Stand, d for Double or nothing\n")
 		fmt.Scanln(&decision)
-
+		if decision == "d" {
+			DorN = true
+			decision = "h"
+		}
 		if decision == "h" {
 			drawCard(player, deck)
 			calcScore(player)
@@ -261,12 +267,17 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 	if (player.Score > dealer.Score && player.IsBusted == false) || dealer.IsBusted == true {
 		fmt.Printf("%s, you win!! Good job.\n", player.Name)
+		win = 1
+
 	} else if (player.Score < dealer.Score) || player.IsBusted == true {
 		fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
+		win = -1
 	} else {
+		win = 0
 		fmt.Printf("It's a tie.\n")
 	}
-
+	wager = betResult(wager, win, DorN)
+	// player.numChips + wager
 	fmt.Println("\n******************** END OF GAME ********************")
 	fmt.Println("Return to menu? (Y/N)")
 	var back string
@@ -441,6 +452,35 @@ func viewwallet(x Player) {
 	if choice == "n" {
 		viewwallet(x)
 	}
+
+}
+
+/*
+Gambleing mechanics Tristan
+*/
+func bet(x Player) int {
+	var wager int
+	fmt.Println("How much would you like to bet?")
+	fmt.Scanln(&wager)
+	if wager <= x.numChips && wager >= 0 {
+		return wager
+	} else {
+		fmt.Println("Not enough chips in your wallet")
+		bet(x)
+	}
+	return 0
+}
+func betResult(wager int, win int, DorN bool) int {
+	if DorN == true {
+		wager *= 2
+	}
+	switch win {
+	case -1:
+		wager *= -1
+	case 0:
+		wager = 0
+	}
+	return wager
 
 }
 
