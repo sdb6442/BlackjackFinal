@@ -29,6 +29,12 @@ type Player struct {
 	Hand     []CardMaker
 	Score    int
 	IsBusted bool
+
+	cash       float64
+	chipValue  float64
+	numChips   int
+	prizes     []string
+	totalgames int
 }
 
 type CardMaker struct {
@@ -48,27 +54,19 @@ type prizeMaker struct {
 type Shop []prizeMaker
 type Deck []CardMaker
 
-var wallet float64 = 127.00
-var chipValue float64 = 10.00
-var numChips int
+func yourWallet(player *Player) {
 
-func logout() {
-	//prototype for converting player chips to cash
-	fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
-	for i := 0; numChips != 0; i++ {
-		wallet = wallet + chipValue
-		numChips--
-	}
+	// starter money
+	player.cash = 100.00
+	player.chipValue = 10.00
+	player.numChips = 5
 
-	//fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
-	fmt.Println("You have", "$", wallet, "in your wallet")
-
-	fmt.Println("\nThank you for playing, please come again")
-	fmt.Println()
-	return
 }
 
 /*
+
+
+
 
 
 
@@ -116,6 +114,38 @@ func newDeck() (deck Deck) {
 		}
 	}
 	return deck
+}
+
+/*
+Blackjack Gambling mechanics Tristan
+*/
+func bet(x *Player) int {
+	var wager int
+	fmt.Println("     * Your Chips: ", x.numChips)
+	fmt.Println("     * How much would you like to bet?")
+	fmt.Scanln(&wager)
+	if wager <= x.numChips && wager >= 0 {
+		fmt.Println("     * You bet ", wager, "Chips.")
+		return wager
+	} else {
+		fmt.Println("Not enough chips in your wallet")
+		bet(x)
+	}
+	return 0
+}
+func betResult(wager int, win int, DorN bool) int {
+	if DorN == true {
+		wager *= 2
+	}
+	switch win {
+
+	case -1:
+		wager *= -1
+	case 0:
+		wager = 0
+	}
+	return wager
+
 }
 
 /*
@@ -179,9 +209,12 @@ func printHand(hand []CardMaker) string {
 
 // Blackjack - Game play (Sam)
 func blackJack(dealer, player *Player, deck *Deck) {
+	var wager int
 
+	var DorN = false
 	fmt.Println("\n******************** START BLACKJACK GAME ********************")
 
+	wager = bet(player)
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
 	drawCard(dealer, deck)
@@ -205,21 +238,32 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	// Let player decide to hit or stand, scores and hands update and print
 	var decision string
 	for !player.IsBusted {
-		fmt.Printf("Would you like to hit or stand? - Enter h for Hit, s for Stand\n")
+		fmt.Printf("Would you like to hit or stand? - ( [h]it / [s]tand/ [d]ouble down )\n")
 		fmt.Scanln(&decision)
-
+		if decision == "d" {
+			DorN = true
+			decision = "h"
+		}
 		if decision == "h" {
 			drawCard(player, deck)
 			calcScore(player)
-			fmt.Printf("****** New Hand ******\n")
+			fmt.Printf("\n******** You Hit. ********\n")
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
 			fmt.Printf("\nCurrent Total: %d\n", player.Score)
 
 			if player.Score > 21 {
 				player.IsBusted = true
-				fmt.Printf("Ooops, you busted! Dealer wins.\n")
+
+				wager = betResult(wager, -1, DorN)
+				fmt.Printf("Oops, you busted! Dealer wins. Better luck next time %s.\n", player.Name)
+				player.numChips += wager
+				fmt.Println("You Lost: ", wager, "chips.")
+				fmt.Println("\n******************** END OF GAME ********************")
+				backmenu(player, 1)
 				break
+
 			}
+			break
 		} else if decision == "s" {
 			fmt.Printf("%s stands with a score of %d\n", player.Name, player.Score)
 			break
@@ -229,14 +273,14 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	}
 
 	// Dealer reveals second card
-	fmt.Printf("\nDealer reveals second card, total hand: %s ", printHand(dealer.Hand))
-	fmt.Printf("\nDealer's updated total: %d ", dealer.Score)
+	fmt.Printf("\nDealer reveals next card, total hand: %s ", printHand(dealer.Hand))
+	fmt.Printf("\nDealer's total: %d ", dealer.Score)
 
 	// Dealer hits if dealer's hand is below 17 and player didn't bust
 	for dealer.Score < 17 && player.IsBusted == false {
 		drawCard(dealer, deck)
 		calcScore(dealer)
-		fmt.Println("\nDealer hits.")
+		fmt.Println("\n****** Dealer hits. ******\n")
 		fmt.Printf("Dealer's updated hand: %s ", printHand(dealer.Hand))
 		fmt.Printf("\nDealer's updated point total: %d\n", dealer.Score)
 
@@ -250,39 +294,47 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 	// Dealer stands if score is between 17 and 21
 	if dealer.Score >= 17 && dealer.Score <= 21 {
-		fmt.Printf("\nDealer stands.\n")
+		fmt.Printf("\n ***** Dealer stands. *****\n")
 	}
-
-	fmt.Println("\n***** Hand is over *****")
 
 	// Score results, if player and dealer doesn't bust:
 	fmt.Printf("\nDealer Total: %d", dealer.Score)
 	fmt.Printf("\nYour Total: %d\n", player.Score)
 
 	if (player.Score > dealer.Score && player.IsBusted == false) || dealer.IsBusted == true {
+
+		wager = betResult(wager, 1, DorN)
 		fmt.Printf("%s, you win!! Good job.\n", player.Name)
+
+		player.numChips += player.Score + wager
+
+		fmt.Println("You Won: ", player.Score+wager, "chips.")
+
 	} else if (player.Score < dealer.Score) || player.IsBusted == true {
+
+		wager = betResult(wager, -1, DorN)
 		fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
+		player.numChips += wager
+		fmt.Println("You Lost: ", wager, "chips.")
 	} else {
+
 		fmt.Printf("It's a tie.\n")
 	}
 
 	fmt.Println("\n******************** END OF GAME ********************")
-	fmt.Println("Return to menu? (Y/N)")
-	var back string
-	fmt.Scanln(&back)
-	if back == "y" {
-		directory(*player)
-	} else if back == "n" {
-		return
-	}
-
+	backmenu(player, 1)
 }
 
 // Blackjack Game functions (sam)
-func playblackjack(x Player) {
+func playblackjack(player *Player) {
+	// Adds to the game count
+	player.totalgames += 1
+
 	// Makes the order of cards random each time program starts
 	rand.Seed(time.Now().UnixNano())
+
+	// Clears former hands
+	player.Hand = nil
 
 	// Create deck
 	deck := newDeck()
@@ -294,7 +346,7 @@ func playblackjack(x Player) {
 	dealer := Player{Name: "Dealer"}
 
 	// Begin Blackjack
-	blackJack(&dealer, &x, &deck)
+	blackJack(&dealer, &*player, &deck)
 }
 
 /*
@@ -309,7 +361,7 @@ func playblackjack(x Player) {
  */
 
 func prizeList() (shop Shop) {
-	prizes := [10]string{"Starbucks GiftCard", "Gas card", "Scratch-off lottery tickets", "Bottles of liquor", "Movie Tickets", "Spay day tickets", "Football Tickets",
+	prizes := [10]string{"Starbucks GiftCard", "Gas Coupon", "Scratch-off lottery tickets", "Bottles of liquor", "Movie Tickets", "Spay day tickets", "Football Tickets",
 		"Dinner for 2", "Smart speakers", "iPod touch"}
 
 	//Based on num of chips
@@ -326,53 +378,48 @@ func prizeList() (shop Shop) {
 	return shop
 }
 
-// prototype for buying prize (brian)
-func buyprize(x Player, s int) {
-
-	var choice string
-	//var itemChoice int
-	fmt.Println("Would you like to purchase a prize? (y/n)")
-	fmt.Scan(&choice)
-	if choice == "y" {
-		fmt.Println("Enter prize number for selection: ")
-		fmt.Scan(&s)
-	}
-	if choice == "n" {
-		println("Returning to Menu.")
-		directory(x)
-	}
-}
-
 // Function for shopping for prizes (brian)
-func shopping(x Player) {
+func shopping(player *Player) {
 	var choice string
 	var itemChoice int
+	var numChips = player.numChips
+
 	shop := prizeList()
+	fmt.Println("******************* PRIZE SHOP *******************")
+
 	fmt.Println("\nThis is our list of prizes: ")
-	for i := 1; i < len(shop); i++ {
-		fmt.Println("[", i, "]:", shop[i].cost, "chips > ", shop[i].item)
+	for i := 0; i < len(shop); i++ {
+		fmt.Println("[", i+1, "]:", shop[i].cost, "chips > ", shop[i].item)
 	}
 
-	fmt.Println("\nEnter prize number for selection: ")
+	fmt.Println("\n     *TOTAL CHIPS: ", numChips)
+	fmt.Println("\nEnter a prize number for selection, or type [0] to cancel. ")
 	fmt.Scanln(&itemChoice)
 
 	for num := range shop {
-		if itemChoice == shop[num].itemNum && numChips > shop[num].cost {
-			numChips = numChips - shop[num].cost
-			fmt.Println("\nThank you for your purchase")
-			fmt.Println("\nYou bought", shop[num].item)
-			fmt.Println("\nYou have", numChips, "chips left")
+		if itemChoice-1 == shop[num].itemNum && numChips > shop[num].cost {
+			player.numChips = numChips - shop[num].cost
+			fmt.Println("\n******** Your Purchase ********")
+			fmt.Println("\n     *You bought", shop[num].item)
+			player.prizes = append(player.prizes, shop[num].item)
+			fmt.Println("     *You have", player.numChips, "chips left.")
 			break
 		}
+		if itemChoice == 0 {
+			fmt.Println("Purchase Cancelled.")
+			backmenu(player, 2)
+			break
+		}
+
 	}
 
 	fmt.Println("\nWould you like to purchase another prize? (y/n)")
 	fmt.Scanln(&choice)
 	if choice == "y" {
-		shopping(x)
+		shopping(player)
 	} else if choice == "n" {
-
-		directory(x)
+		fmt.Println("\n***** Thank you for Shopping! *****")
+		backmenu(player, 2)
 	}
 }
 
@@ -386,13 +433,13 @@ func shopping(x Player) {
 
  */
 
-func directory(x Player) {
+func directory(player *Player) {
 
 	fmt.Println("******************* BLACKJACK MENU *******************")
 
-	fmt.Printf("Welcome to blackjack , %s!\n", x.Name)
-	fmt.Println("Select a number to begin an activity. \n\n[1]: Play Blackjack\n[2]: Go Shopping\n[3]: View Wallet\n[4]: Logout")
-
+	fmt.Printf("\n  *Welcome to blackjack , %s!\n", player.Name)
+	fmt.Println("  *Select a number to begin an activity. \n\n          [1]: Play Blackjack\n          [2]: Go Shopping\n          [3]: View Wallet\n          [4]: Logout")
+	fmt.Println("\n******************************************************")
 	var menunum int
 	fmt.Scanln(&menunum)
 
@@ -400,14 +447,15 @@ func directory(x Player) {
 		switch {
 		case menunum == 1:
 			println("You Selected Blackjack.")
-			playblackjack(x)
+			playblackjack(player)
 		case menunum == 2:
 			println("You Selected Shopping.")
-			shopping(x)
+			shopping(player)
 		case menunum == 3:
 			println("You Selected Wallet.")
-			viewwallet(x)
+			viewwallet(player)
 		case menunum == 4:
+			logout(player)
 			println("Logging You Out...")
 		}
 	}
@@ -418,30 +466,80 @@ func directory(x Player) {
 
 }
 
-func viewwallet(x Player) {
+func viewwallet(player *Player) {
+	var chipValue = player.chipValue
+	var wallet = player.cash
+	var numChips = player.numChips
 
-	//prototype for converting player cash to chips
-	//var wallet float64 = 127.00
-	//var chipValue float64 = 10.00
-	//var numChips int
-	for i := 0; chipValue-1 < wallet; i++ {
-		wallet = wallet - chipValue
-		numChips++
+	// for i := 0; chipValue-1 < wallet; i++ {
+	// 	wallet = wallet - chipValue
+	// 	numChips++
+	// }
+
+	fmt.Println("*********************** WALLET ***********************")
+	fmt.Println("\n     *Chips: ", numChips)
+	fmt.Println("     *Cash: $", wallet)
+	fmt.Println("     *Cash Out Rate: $", chipValue)
+	fmt.Println("\n******************************************************")
+	fmt.Println("\nConvert Chips to Cash? (y/n)")
+	var convert string
+	fmt.Scanln(&convert)
+	if convert == "y" {
+		fmt.Println("******* Converting Chips... *******\n")
+
+		player.cash += float64(numChips) * chipValue
+		player.numChips = 0
+
+		fmt.Println("     *You Cashed Out for $", player.cash, ".\n")
+		fmt.Println("***********************************\n")
+	}
+	if convert == "n" {
+		backmenu(player, 3)
 	}
 
-	fmt.Println("\nChips Count: ", numChips, "valued at $", chipValue, "each")
-	fmt.Println("Cash: $", wallet)
-	fmt.Println("\nReturn to menu? (y/n)")
+	backmenu(player, 3)
+
+}
+
+func backmenu(player *Player, taskint int) {
+
+	fmt.Println("Return to menu? (y/n)")
 	var choice string
 	fmt.Scanln(&choice)
 	if choice == "y" {
-		println("Returning to Menu.")
-		directory(x)
+		println("Returning to Menu.\n\n\n\n")
+		directory(player)
 	}
 	if choice == "n" {
-		viewwallet(x)
+		if taskint >= 1 || taskint <= 4 {
+			switch {
+			case taskint == 1:
+				playblackjack(player)
+			case taskint == 2:
+				shopping(player)
+			case taskint == 3:
+				viewwallet(player)
+			}
+		}
 	}
+}
 
+// logout menu
+func logout(player *Player) {
+	fmt.Println("********************* GAME RECORD ********************")
+	fmt.Println("               ", player.Name, "'s Game Record.")
+	fmt.Println("GAMES PLAYED:")
+	fmt.Println("      [*] TOTAL GAMES:", player.totalgames)
+	fmt.Println("\n\nPRIZES BOUGHT:")
+	for i := 0; i < len(player.prizes); i++ {
+		fmt.Printf("      [*] %s\n", player.prizes[i])
+	}
+	fmt.Println("\n\nWALLET: ")
+	fmt.Println("      [*] TOTAL CHIPS:", player.numChips)
+	fmt.Println("      [*] TOTAL CASH: $", player.cash)
+	fmt.Println("\nThank you for playing, please come again!\n")
+	fmt.Println("*****************************************************")
+	return
 }
 
 /*
@@ -453,8 +551,7 @@ func main() {
 
 	fmt.Println("What's your name?")
 	fmt.Scanln(&player.Name)
+	yourWallet(&player)
+	directory(&player)
 
-	directory(player)
-
-	//logout()
 }
