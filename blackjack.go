@@ -52,22 +52,6 @@ type prizeMaker struct {
 type Shop []prizeMaker
 type Deck []CardMaker
 
-// func logout() {
-// 	//prototype for converting player chips to cash
-// 	fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
-// 	for i := 0; numChips != 0; i++ {
-// 		wallet = wallet + chipValue
-// 		numChips--
-// 	}
-
-// 	//fmt.Println("\nRemaining", numChips, "chips have been converted to cash")
-// 	fmt.Println("You have", "$", wallet, "in your wallet")
-
-// 	fmt.Println("\nThank you for playing, please come again")
-// 	fmt.Println()
-// 	return
-// }
-
 func yourWallet(player *Player) {
 
 	// starter money
@@ -191,9 +175,12 @@ func printHand(hand []CardMaker) string {
 
 // Blackjack - Game play (Sam)
 func blackJack(dealer, player *Player, deck *Deck) {
-
+	var wager int
+	var win int = 0
+	var DorN = false
 	fmt.Println("\n******************** START BLACKJACK GAME ********************")
 
+	wager = bet(*player)
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
 	drawCard(dealer, deck)
@@ -219,7 +206,10 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	for !player.IsBusted {
 		fmt.Printf("Would you like to hit or stand? - ( [h]it / [s]tand )\n")
 		fmt.Scanln(&decision)
-
+		if decision == "d" {
+			DorN = true
+			decision = "h"
+		}
 		if decision == "h" {
 			drawCard(player, deck)
 			calcScore(player)
@@ -276,13 +266,17 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	if (player.Score > dealer.Score && player.IsBusted == false) || dealer.IsBusted == true {
 		fmt.Printf("%s, you win!! Good job.\n", player.Name)
 		player.numChips += player.Score
+		win = 1
 		fmt.Println("You Won: ", player.Score, "chips.")
 	} else if (player.Score < dealer.Score) || player.IsBusted == true {
 		fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
+		win = -1
 	} else {
+		win = 0
 		fmt.Printf("It's a tie.\n")
 	}
-
+	wager = betResult(wager, win, DorN)
+	// player.numChips + wager
 	fmt.Println("\n******************** END OF GAME ********************")
 	backmenu(player, 1)
 }
@@ -479,6 +473,35 @@ func backmenu(player *Player, taskint int) {
 			}
 		}
 	}
+}
+
+/*
+Gambleing mechanics Tristan
+*/
+func bet(x Player) int {
+	var wager int
+	fmt.Println("How much would you like to bet?")
+	fmt.Scanln(&wager)
+	if wager <= x.numChips && wager >= 0 {
+		return wager
+	} else {
+		fmt.Println("Not enough chips in your wallet")
+		bet(x)
+	}
+	return 0
+}
+func betResult(wager int, win int, DorN bool) int {
+	if DorN == true {
+		wager *= 2
+	}
+	switch win {
+	case -1:
+		wager *= -1
+	case 0:
+		wager = 0
+	}
+	return wager
+
 }
 
 /*
