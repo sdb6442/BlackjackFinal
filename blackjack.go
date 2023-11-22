@@ -223,7 +223,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 		if decision == "h" {
 			drawCard(player, deck)
 			calcScore(player)
-			fmt.Printf("****** New Hand ******\n")
+			fmt.Printf("\n******** You Hit. ********\n")
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
 			fmt.Printf("\nCurrent Total: %d\n", player.Score)
 
@@ -243,14 +243,14 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	}
 
 	// Dealer reveals second card
-	fmt.Printf("\nDealer reveals second card, total hand: %s ", printHand(dealer.Hand))
-	fmt.Printf("\nDealer's updated total: %d ", dealer.Score)
+	fmt.Printf("\nDealer reveals next card, total hand: %s ", printHand(dealer.Hand))
+	fmt.Printf("\nDealer's total: %d ", dealer.Score)
 
 	// Dealer hits if dealer's hand is below 17 and player didn't bust
 	for dealer.Score < 17 && player.IsBusted == false {
 		drawCard(dealer, deck)
 		calcScore(dealer)
-		fmt.Println("\nDealer hits.")
+		fmt.Println("\n****** Dealer hits. ******\n")
 		fmt.Printf("Dealer's updated hand: %s ", printHand(dealer.Hand))
 		fmt.Printf("\nDealer's updated point total: %d\n", dealer.Score)
 
@@ -275,6 +275,8 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 	if (player.Score > dealer.Score && player.IsBusted == false) || dealer.IsBusted == true {
 		fmt.Printf("%s, you win!! Good job.\n", player.Name)
+		player.numChips += player.Score
+		fmt.Println("You Won: ", player.Score, "chips.")
 	} else if (player.Score < dealer.Score) || player.IsBusted == true {
 		fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
 	} else {
@@ -289,6 +291,9 @@ func blackJack(dealer, player *Player, deck *Deck) {
 func playblackjack(player *Player) {
 	// Makes the order of cards random each time program starts
 	rand.Seed(time.Now().UnixNano())
+
+	// Clears former hands
+	player.Hand = nil
 
 	// Create deck
 	deck := newDeck()
