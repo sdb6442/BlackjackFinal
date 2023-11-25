@@ -1,3 +1,7 @@
+/*  Final Project - Blackjack Program written in Go
+@authors Team Accelerate: Samuel Baynes, Tristan Hall, Alex Johnston, Jasmine Kingg, and Brian Samuels
+*/
+
 package main
 
 import (
@@ -59,7 +63,7 @@ func yourWallet(player *Player) {
 	// starter money
 	player.cash = 100.00
 	player.chipValue = 10.00
-	player.numChips = 5
+	player.numChips = 50
 
 }
 
@@ -125,7 +129,7 @@ func bet(x *Player) int {
 	fmt.Println("     * How much would you like to bet?")
 	fmt.Scanln(&wager)
 	if wager <= x.numChips && wager >= 0 {
-		fmt.Println("     * You bet ", wager, "Chips.")
+		fmt.Println("     * You bet", wager, "Chips.")
 		return wager
 	} else {
 		fmt.Println("Not enough chips in your wallet")
@@ -280,7 +284,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	for dealer.Score < 17 && player.IsBusted == false {
 		drawCard(dealer, deck)
 		calcScore(dealer)
-		fmt.Println("\n****** Dealer hits. ******\n")
+		fmt.Println("\n****** Dealer hits. ******")
 		fmt.Printf("Dealer's updated hand: %s ", printHand(dealer.Hand))
 		fmt.Printf("\nDealer's updated point total: %d\n", dealer.Score)
 
@@ -306,9 +310,9 @@ func blackJack(dealer, player *Player, deck *Deck) {
 		wager = betResult(wager, 1, DorN)
 		fmt.Printf("%s, you win!! Good job.\n", player.Name)
 
-		player.numChips += player.Score + wager
+		player.numChips += wager
 
-		fmt.Println("You Won: ", player.Score+wager, "chips.")
+		fmt.Println("You Won: ", wager, "chips.")
 
 	} else if (player.Score < dealer.Score) || player.IsBusted == true {
 
@@ -485,13 +489,13 @@ func viewwallet(player *Player) {
 	var convert string
 	fmt.Scanln(&convert)
 	if convert == "y" {
-		fmt.Println("******* Converting Chips... *******\n")
+		fmt.Println("******* Converting Chips... *******")
 
 		player.cash += float64(numChips) * chipValue
 		player.numChips = 0
 
-		fmt.Println("     *You Cashed Out for $", player.cash, ".\n")
-		fmt.Println("***********************************\n")
+		fmt.Println("     *You Cashed Out for $", player.cash, ".")
+		fmt.Println("***********************************")
 	}
 	if convert == "n" {
 		backmenu(player, 3)
@@ -537,8 +541,8 @@ func logout(player *Player) {
 	fmt.Println("\n\nWALLET: ")
 	fmt.Println("      [*] TOTAL CHIPS:", player.numChips)
 	fmt.Println("      [*] TOTAL CASH: $", player.cash)
-	fmt.Println("\nThank you for playing, please come again!\n")
-	fmt.Println("*****************************************************")
+	fmt.Println("\nThank you for playing, please come again!")
+	fmt.Println("\n*****************************************************")
 	return
 }
 
