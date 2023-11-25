@@ -255,11 +255,15 @@ func blackJack(dealer, player *Player, deck *Deck) {
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
 			fmt.Printf("\nCurrent Total: %d\n", player.Score)
 
+			// Dealer's hand
+			fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
+			fmt.Printf("\nDealer's point Total: %d \n", dealer.Score)
+
 			if player.Score > 21 {
 				player.IsBusted = true
 
 				wager = betResult(wager, -1, DorN)
-				fmt.Printf("Oops, you busted! Dealer wins. Better luck next time %s.\n", player.Name)
+				fmt.Printf("\nOops, you busted! Dealer wins. Better luck next time %s.\n", player.Name)
 				player.numChips += wager
 				fmt.Println("You Lost: ", wager, "chips.")
 				fmt.Println("\n******************** END OF GAME ********************")
@@ -267,7 +271,6 @@ func blackJack(dealer, player *Player, deck *Deck) {
 				break
 
 			}
-			break
 		} else if decision == "s" {
 			fmt.Printf("%s stands with a score of %d\n", player.Name, player.Score)
 			break
@@ -275,10 +278,6 @@ func blackJack(dealer, player *Player, deck *Deck) {
 			fmt.Println("Invalid entry please enter h for Hit or s for Stand")
 		}
 	}
-
-	// Dealer reveals second card
-	fmt.Printf("\nDealer reveals next card, total hand: %s ", printHand(dealer.Hand))
-	fmt.Printf("\nDealer's total: %d ", dealer.Score)
 
 	// Dealer hits if dealer's hand is below 17 and player didn't bust
 	for dealer.Score < 17 && player.IsBusted == false {
