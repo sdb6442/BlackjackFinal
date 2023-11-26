@@ -481,10 +481,13 @@ func viewwallet(player *Player) {
 	fmt.Println("     *Cash: $", wallet)
 	fmt.Println("     *Cash Out Rate: $", chipValue)
 	fmt.Println("\n******************************************************")
-	fmt.Println("\nConvert Chips to Cash? (y/n)")
+	fmt.Println("\nWhich would you like to convert?")
+	fmt.Println("[1]: Convert Chips to Cash")
+	fmt.Println("[2]: Convert Cash to Chips")
+	fmt.Println("[x]: Cancel")
 	var convert string
 	fmt.Scanln(&convert)
-	if convert == "y" {
+	if convert == "1" {
 		fmt.Println("******* Converting Chips... *******\n")
 
 		player.cash += float64(numChips) * chipValue
@@ -493,7 +496,22 @@ func viewwallet(player *Player) {
 		fmt.Println("     *You Cashed Out for $", player.cash, ".\n")
 		fmt.Println("***********************************\n")
 	}
-	if convert == "n" {
+	if convert == "2" {
+		fmt.Println("******* Converting Cash... *******\n")
+
+		if player.cash >= player.chipValue {
+			var buychips int = int(player.cash / chipValue)
+			player.numChips += buychips
+			player.cash = 0
+
+			fmt.Println("     *You Bought", buychips, "chips .\n")
+		} else {
+			fmt.Println("Not enough cash. Please convert\n  cash to chips or refresh the game.\n")
+		}
+
+		fmt.Println("***********************************\n")
+	}
+	if convert == "x" {
 		backmenu(player, 3)
 	}
 
