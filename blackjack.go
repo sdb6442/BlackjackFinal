@@ -251,7 +251,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
 			fmt.Printf("\nCurrent Total: %d\n", player.Score)
 
-			if player.Score > 21 {
+			if player.Score >= 21 {
 				player.IsBusted = true
 
 				wager = betResult(wager, -1, DorN)
