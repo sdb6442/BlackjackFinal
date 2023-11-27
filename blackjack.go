@@ -223,6 +223,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
 	drawCard(dealer, deck)
+	drawCard(player, deck)
 
 	// Dealer's first card is revealed
 	calcScore(dealer)
