@@ -214,8 +214,9 @@ func printHand(hand []CardMaker) string {
 // Blackjack - Game play (Sam)
 func blackJack(dealer, player *Player, deck *Deck) {
 	var wager int
-
 	var DorN = false
+	player.IsBusted = false
+
 	fmt.Println("\n******************** START BLACKJACK GAME ********************")
 
 	wager = bet(player)
@@ -229,7 +230,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	fmt.Printf("\nDealer's point total: %d\n", dealer.Score)
 
 	// Player and Dealer are dealt two more cards, total is calculated
-	drawCard(player, deck)
+	//drawCard(player, deck)
 	drawCard(dealer, deck)
 	calcScore(player)
 	calcScore(dealer)
@@ -237,15 +238,17 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	// Show player's hand and total
 	fmt.Println("")
 	fmt.Printf("Your Hand:%s ", printHand(player.Hand))
-	fmt.Printf("\nYour point total: %d\n", player.Score)
+	fmt.Printf("\nYour point total: %d\n\n", player.Score)
 
 	// Let player decide to hit or stand, scores and hands update and print
 	var decision string
+	decision = ""
 	for !player.IsBusted {
 		fmt.Printf("Would you like to hit or stand? - ( [h]it / [s]tand/ [d]ouble down )\n")
 		fmt.Scanln(&decision)
 		if decision == "d" {
 			DorN = true
+			fmt.Scanln("You're doubling down for", wager, "chips.")
 			decision = "h"
 		}
 		if decision == "h" {
@@ -255,76 +258,102 @@ func blackJack(dealer, player *Player, deck *Deck) {
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
 			fmt.Printf("\nCurrent Total: %d\n", player.Score)
 
-			// Dealer's hand
-			fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
-			fmt.Printf("\nDealer's point Total: %d \n", dealer.Score)
-
 			if player.Score > 21 {
 				player.IsBusted = true
-
-				wager = betResult(wager, -1, DorN)
-				fmt.Printf("\nOops, you busted! Dealer wins. Better luck next time %s.\n", player.Name)
-				player.numChips += wager
-				fmt.Println("You Lost: ", wager, "chips.")
-				fmt.Println("\n******************** END OF GAME ********************")
-				backmenu(player, 1)
-				break
+				fmt.Printf("\nOops, you busted!\n")
 
 			}
+			// Dealer hits if dealer's hand is below 17 and player didn't bust
+			if dealer.Score < 17 && player.IsBusted == false {
+				drawCard(dealer, deck)
+				calcScore(dealer)
+				fmt.Println("\n****** Dealer hits. ******")
+				fmt.Printf("\nDealer's updated hand: %s ", printHand(dealer.Hand))
+				fmt.Printf("\nDealer's total: %d\n", dealer.Score)
+				fmt.Println("\n**************************")
+				// Dealer busts if hit goes over 21
+				if dealer.Score > 21 {
+					fmt.Printf("\nDealer busts!\n")
+					dealer.IsBusted = true
+					break
+				}
+			} // Dealer stands if score is between 17 and 21
+			if dealer.Score >= 17 && dealer.Score <= 21 {
+				fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
+				fmt.Printf("\n***** Dealer stands. *****\n\n")
+
+				fmt.Printf("Dealer Total: %d", dealer.Score)
+				fmt.Printf("\nYour Total: %d\n\n", player.Score)
+
+				if player.Score < dealer.Score {
+
+					wager = betResult(wager, -1, DorN)
+					player.numChips += wager
+					fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
+					fmt.Println("You Lost: ", wager, "chips.")
+					break
+				}
+			}
+
 		} else if decision == "s" {
-			fmt.Printf("%s stands with a score of %d\n", player.Name, player.Score)
+			fmt.Printf("*** You stand with a score of %d ***\n\n", player.Score)
+			if player.Score < dealer.Score {
+				fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
+
+				fmt.Printf("\n\nDealer Total: %d", dealer.Score)
+				fmt.Printf("\nYour Total: %d\n", player.Score)
+
+				wager = betResult(wager, -1, DorN)
+				player.numChips += wager
+				fmt.Printf("\nDealer wins. Better luck next time %s.\n", player.Name)
+				fmt.Println("You Lost: ", wager, "chips.")
+				break
+			}
 			break
 		} else {
 			fmt.Println("Invalid entry please enter h for Hit or s for Stand")
 		}
+
 	}
-
-	// Dealer hits if dealer's hand is below 17 and player didn't bust
-	for dealer.Score < 17 && player.IsBusted == false {
-		drawCard(dealer, deck)
-		calcScore(dealer)
-		fmt.Println("\n****** Dealer hits. ******")
-		fmt.Printf("Dealer's updated hand: %s ", printHand(dealer.Hand))
-		fmt.Printf("\nDealer's updated point total: %d\n", dealer.Score)
-
-		// Dealer busts if hit goes over 21
-		if dealer.Score > 21 {
-			fmt.Printf("Dealer busts! You win!")
-			dealer.IsBusted = true
-			break
-		}
-	}
-
-	// Dealer stands if score is between 17 and 21
-	if dealer.Score >= 17 && dealer.Score <= 21 {
-		fmt.Printf("\n ***** Dealer stands. *****\n")
-	}
-
-	// Score results, if player and dealer doesn't bust:
-	fmt.Printf("\nDealer Total: %d", dealer.Score)
-	fmt.Printf("\nYour Total: %d\n", player.Score)
 
 	if (player.Score > dealer.Score && player.IsBusted == false) || dealer.IsBusted == true {
 
+		fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
+
+		fmt.Printf("\n\nDealer Total: %d", dealer.Score)
+		fmt.Printf("\nYour Total: %d\n", player.Score)
+
 		wager = betResult(wager, 1, DorN)
-		fmt.Printf("%s, you win!! Good job.\n", player.Name)
+		fmt.Printf("\n %s, you win!! Good job.\n", player.Name)
 
 		player.numChips += wager
 
-		fmt.Println("You Won: ", wager, "chips.")
+		fmt.Println(" You Won:", wager, "chips.")
 
-	} else if (player.Score < dealer.Score) || player.IsBusted == true {
+	} else if player.IsBusted == true {
+
+		fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
+
+		fmt.Printf("\n\nDealer Total: %d", dealer.Score)
+		fmt.Printf("\nYour Total: %d\n", player.Score)
 
 		wager = betResult(wager, -1, DorN)
-		fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
 		player.numChips += wager
+		fmt.Printf("\nDealer wins. Better luck next time %s.\n", player.Name)
 		fmt.Println("You Lost: ", wager, "chips.")
-	} else {
+	} else if player.Score == dealer.Score {
 
-		fmt.Printf("It's a tie.\n")
+		fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
+
+		fmt.Printf("\n\nDealer Total: %d", dealer.Score)
+		fmt.Printf("\nYour Total: %d\n", player.Score)
+
+		fmt.Printf("\nIt's a tie.\n")
+		wager = betResult(wager, 0, DorN)
+		fmt.Println("You Won ", wager, "chips.")
 	}
 
-	fmt.Println("\n******************** END OF GAME ********************")
+	fmt.Println("\n************************* END OF GAME ************************")
 	backmenu(player, 1)
 }
 
