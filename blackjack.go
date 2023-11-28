@@ -274,6 +274,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	// Player and Dealer are dealt two more cards, total is calculated
 	//drawCard(player, deck)
 	drawCard(dealer, deck)
+	drawCard(player, deck)
 	calcScore(player)
 	calcScore(dealer)
 
