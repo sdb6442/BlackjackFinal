@@ -5,11 +5,11 @@
 package main
 
 import (
-	"embed"
+	//"embed"
 	"fmt"
-	"html/template"
-	"io"
-	"io/fs"
+	//"html/template"
+	//"io"
+	//"io/fs"
 	"math/rand"
 	"reflect"
 	"time"
@@ -19,39 +19,42 @@ const (
 	layoutsDir   = "templates/layouts"
 	templatesDir = "templates"
 	extension    = "/*.html"
-	gamepage = "home.html"
+	gamepage     = "home.html"
 )
 
+/*
 var (
+
 	//go:embed templates/* templates/layouts/*
 	files     embed.FS
 	templates map[string]*template.Template
+
 )
 
-func LoadTemplates() error {
-	if templates == nil {
-		templates = make(map[string]*template.Template)
-	}
-	tmplFiles, err := fs.ReadDir(files, templatesDir)
-	if err != nil {
-		return err
-	}
-
-	for _, tmpl := range tmplFiles {
-		if tmpl.IsDir() {
-			continue
+	func LoadTemplates() error {
+		if templates == nil {
+			templates = make(map[string]*template.Template)
 		}
-
-		pt, err := template.ParseFS(files, templatesDir+"/"+tmpl.Name(), layoutsDir+extension)
+		tmplFiles, err := fs.ReadDir(files, templatesDir)
 		if err != nil {
 			return err
 		}
 
-		templates[tmpl.Name()] = pt
-	}
-	return nil
-}
+		for _, tmpl := range tmplFiles {
+			if tmpl.IsDir() {
+				continue
+			}
 
+			pt, err := template.ParseFS(files, templatesDir+"/"+tmpl.Name(), layoutsDir+extension)
+			if err != nil {
+				return err
+			}
+
+			templates[tmpl.Name()] = pt
+		}
+		return nil
+	}
+*/
 type errorString struct {
 	s string
 }
@@ -264,7 +267,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
 	drawCard(dealer, deck)
-	drawCard(player, deck)
+	//drawCard(player, deck)
 
 	// Dealer's first card is revealed
 	calcScore(dealer)
