@@ -330,15 +330,16 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 				fmt.Printf("Dealer Total: %d", dealer.Score)
 				fmt.Printf("\nYour Total: %d\n\n", player.Score)
+				/*
+					if player.Score < dealer.Score {
 
-				if player.Score < dealer.Score {
-
-					wager = betResult(wager, -1, DorN)
-					player.numChips += wager
-					fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
-					fmt.Println("You Lost: ", wager, "chips.")
-					break
-				}
+						wager = betResult(wager, -1, DorN)
+						player.numChips += wager
+						fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
+						fmt.Println("You Lost: ", wager, "chips.")
+						break
+					}
+				*/
 			}
 
 		} else if decision == "s" {
