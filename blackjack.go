@@ -5,11 +5,7 @@
 package main
 
 import (
-	//"embed"
 	"fmt"
-	//"html/template"
-	//"io"
-	//"io/fs"
 	"math/rand"
 	"reflect"
 	"time"
@@ -22,39 +18,6 @@ const (
 	gamepage     = "home.html"
 )
 
-/*
-var (
-
-	//go:embed templates/* templates/layouts/*
-	files     embed.FS
-	templates map[string]*template.Template
-
-)
-
-	func LoadTemplates() error {
-		if templates == nil {
-			templates = make(map[string]*template.Template)
-		}
-		tmplFiles, err := fs.ReadDir(files, templatesDir)
-		if err != nil {
-			return err
-		}
-
-		for _, tmpl := range tmplFiles {
-			if tmpl.IsDir() {
-				continue
-			}
-
-			pt, err := template.ParseFS(files, templatesDir+"/"+tmpl.Name(), layoutsDir+extension)
-			if err != nil {
-				return err
-			}
-
-			templates[tmpl.Name()] = pt
-		}
-		return nil
-	}
-*/
 type errorString struct {
 	s string
 }
@@ -113,14 +76,7 @@ func yourWallet(player *Player) {
 
 /*
 
-
-
-
-
-
 ************** (Brian) Creating Card Deck Functions **************
-
-
 
  */
 
@@ -165,7 +121,7 @@ func newDeck() (deck Deck) {
 }
 
 /*
-Blackjack Gambling mechanics Tristan
+Blackjack Gambling mechanics (Tristan)
 */
 func bet(x *Player) int {
 	var wager int
@@ -198,14 +154,7 @@ func betResult(wager int, win int, DorN bool) int {
 
 /*
 
-
-
-
-
 ************** (Sam) Blackjack Game Functions **************
-
-
-
 
  */
 // Shuffles deck of cards (Sam)
@@ -267,7 +216,6 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	// Player and Dealer are dealt a card
 	drawCard(player, deck)
 	drawCard(dealer, deck)
-	//drawCard(player, deck)
 
 	// Dealer's first card is revealed
 	calcScore(dealer)
@@ -275,7 +223,6 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	fmt.Printf("\nDealer's point total: %d\n", dealer.Score)
 
 	// Player and Dealer are dealt two more cards, total is calculated
-	//drawCard(player, deck)
 	drawCard(dealer, deck)
 	drawCard(player, deck)
 	calcScore(player)
@@ -292,18 +239,20 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	for !player.IsBusted {
 		fmt.Printf("Would you like to hit or stand? - ( [h]it / [s]tand/ [d]ouble down )\n")
 		fmt.Scanln(&decision)
+		// If player doubles down, wager is doubled
 		if decision == "d" {
 			DorN = true
 			fmt.Scanln("You're doubling down for", wager, "chips.")
 			decision = "h"
 		}
+		// Outcome for when user hits
 		if decision == "h" {
 			drawCard(player, deck)
 			calcScore(player)
 			fmt.Printf("\n******** You Hit. ********\n")
 			fmt.Printf("Updated hand: %s ", printHand(player.Hand))
 			fmt.Printf("\nCurrent Total: %d\n", player.Score)
-
+			//If player's score is above 21, they bust, game ends
 			if player.Score > 21 {
 				player.IsBusted = true
 				fmt.Printf("\nOops, you busted!\n")
@@ -330,18 +279,8 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 				fmt.Printf("Dealer Total: %d", dealer.Score)
 				fmt.Printf("\nYour Total: %d\n\n", player.Score)
-				/*
-					if player.Score < dealer.Score {
-
-						wager = betResult(wager, -1, DorN)
-						player.numChips += wager
-						fmt.Printf("Dealer wins. Better luck next time %s.\n", player.Name)
-						fmt.Println("You Lost: ", wager, "chips.")
-						break
-					}
-				*/
 			}
-
+			// Reveal totals when user decides to stand
 		} else if decision == "s" {
 			fmt.Printf("*** You stand with a score of %d ***\n\n", player.Score)
 			if player.Score < dealer.Score {
@@ -363,6 +302,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 
 	}
 
+	// Determine Outcome of Game
 	if (player.Score > dealer.Score && player.IsBusted == false) || dealer.IsBusted == true {
 
 		fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
@@ -399,12 +339,12 @@ func blackJack(dealer, player *Player, deck *Deck) {
 		wager = betResult(wager, 0, DorN)
 		fmt.Println("You Won ", wager, "chips.")
 	}
-
+	// End Game, go back to main menu or play again
 	fmt.Println("\n************************* END OF GAME ************************")
 	backmenu(player, 1)
 }
 
-// Blackjack Game functions (sam)
+// Blackjack Game functions (Sam)
 func playblackjack(player *Player) {
 	// Adds to the game count
 	player.totalgames += 1
@@ -430,11 +370,6 @@ func playblackjack(player *Player) {
 
 /*
 
-
-
-
-
-
 ************** (Brian) Prize Shop Functions **************
 
  */
@@ -457,7 +392,7 @@ func prizeList() (shop Shop) {
 	return shop
 }
 
-// Function for shopping for prizes (brian)
+// Function for shopping for prizes (Brian)
 func shopping(player *Player) {
 	var choice string
 	var itemChoice int
@@ -545,15 +480,11 @@ func directory(player *Player) {
 
 }
 
+// View wallet
 func viewwallet(player *Player) {
 	var chipValue = player.chipValue
 	var wallet = player.cash
 	var numChips = player.numChips
-
-	// for i := 0; chipValue-1 < wallet; i++ {
-	// 	wallet = wallet - chipValue
-	// 	numChips++
-	// }
 
 	fmt.Println("*********************** WALLET ***********************")
 	fmt.Println("\n     *Chips: ", numChips)
@@ -568,7 +499,7 @@ func viewwallet(player *Player) {
 	fmt.Scanln(&convert)
 
 	if convert == "1" {
-		fmt.Println("******* Converting Chips... *******\n")
+		fmt.Println("******* Converting Chips... *******")
 
 		player.cash += float64(numChips) * chipValue
 		player.numChips = 0
@@ -577,19 +508,19 @@ func viewwallet(player *Player) {
 		fmt.Println("***********************************")
 	}
 	if convert == "2" {
-		fmt.Println("******* Converting Cash... *******\n")
+		fmt.Println("******* Converting Cash... *******")
 
 		if player.cash >= player.chipValue {
 			var buychips int = int(player.cash / chipValue)
 			player.numChips += buychips
 			player.cash = 0
 
-			fmt.Println("     *You Bought", buychips, "chips .\n")
+			fmt.Println("     *You Bought", buychips, "chips .")
 		} else {
-			fmt.Println("Not enough cash. Please convert\n  cash to chips or refresh the game.\n")
+			fmt.Println("Not enough cash. Please convert\n  cash to chips or refresh the game.")
 		}
 
-		fmt.Println("***********************************\n")
+		fmt.Println("***********************************")
 	}
 	if convert == "x" {
 		backmenu(player, 3)
