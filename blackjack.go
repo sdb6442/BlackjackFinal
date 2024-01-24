@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -239,7 +240,7 @@ func blackJack(dealer, player *Player, deck *Deck) {
 	for !player.IsBusted {
 		fmt.Printf("Would you like to hit or stand? - ( [h]it / [s]tand/ [d]ouble down )\n")
 		fmt.Scanln(&decision)
-		// If player doubles down, wager is doubled
+		// If player doubles down, wager is doubled and, per blackjack rules, the player is automatically dealt a card
 		if decision == "d" {
 			DorN = true
 			fmt.Scanln("You're doubling down for", wager, "chips.")
@@ -292,7 +293,9 @@ func blackJack(dealer, player *Player, deck *Deck) {
 				wager = betResult(wager, -1, DorN)
 				player.numChips += wager
 				fmt.Printf("\nDealer wins. Better luck next time %s.\n", player.Name)
-				fmt.Println("You Lost: ", wager, "chips.")
+				// Calculate the absolute value of wager for printing purposes
+				absoluteWager := int(math.Abs(float64(wager)))
+				fmt.Println("You Lost: ", absoluteWager, "chips.")
 				break
 			}
 			break
@@ -327,7 +330,10 @@ func blackJack(dealer, player *Player, deck *Deck) {
 		wager = betResult(wager, -1, DorN)
 		player.numChips += wager
 		fmt.Printf("\nDealer wins. Better luck next time %s.\n", player.Name)
-		fmt.Println("You Lost: ", wager, "chips.")
+
+		// Calculate the absolute value of wager for printing purposes
+		absoluteWager := int(math.Abs(float64(wager)))
+		fmt.Println("You Lost: ", absoluteWager, "chips.")
 	} else if player.Score == dealer.Score {
 
 		fmt.Printf("\nDealer's hand: %s ", printHand(dealer.Hand))
